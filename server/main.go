@@ -1,12 +1,11 @@
 package main
 
 import (
-	"net"
 	"log"
+	"net"
 	"runtime"
 	"sync"
 )
-
 
 var id = 1000
 
@@ -25,10 +24,10 @@ func lock() {
 }
 
 func unlock() {
-	<- plock
+	<-plock
 }
 
-func StartSocketServer(host string){
+func StartSocketServer(host string) {
 	netListen, err := net.Listen("tcp", host)
 	if err != nil {
 		log.Println(err)
@@ -44,32 +43,28 @@ func StartSocketServer(host string){
 		}
 		log.Println(conn.RemoteAddr().String(), " tcp connect success")
 
-		cli := Client{Id:getId()}
+		cli := Client{Id: getId()}
 		clientMgr.AddClient(cli)
-		
+
 		go cli.onConnect(conn)
 	}
 }
 
-
-
 func getId() int {
 	lock()
 	defer unlock()
-	id ++
+	id++
 	return id
 }
-
 
 type Client struct {
 	Id int
 }
 
-
 type ClientMgr struct {
-	lock sync.Mutex
+	lock    sync.Mutex
 	clients map[int]*Client
-	length int
+	length  int
 }
 
 func (mgr *ClientMgr) AddClient(client Client) {
@@ -77,7 +72,7 @@ func (mgr *ClientMgr) AddClient(client Client) {
 	defer mgr.lock.Unlock()
 
 	mgr.clients[client.Id] = &client
-	mgr.length ++
+	mgr.length++
 	log.Println("clients:", mgr.length)
 }
 
@@ -86,7 +81,7 @@ func (mgr *ClientMgr) DeleteClient(client Client) {
 	defer mgr.lock.Unlock()
 
 	delete(mgr.clients, client.Id)
-	mgr.length --
+	mgr.length--
 	log.Println("clients:", mgr.length)
 }
 
@@ -119,8 +114,7 @@ func (cli *Client) onDisConnect() {
 	clientMgr.DeleteClient(*cli)
 }
 
-
 func main() {
 	runtime.GOMAXPROCS(6)
-	StartSocketServer("127.0.0.1:9090")
+	StartSocketServer("0.0.0.0:9090")
 }
