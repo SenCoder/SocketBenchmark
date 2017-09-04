@@ -20,13 +20,13 @@ func (cli *Client) Start() (err error) {
 
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", SERVER_ADDRESS)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Fatal error: %s", err.Error())
+		fmt.Fprintf(os.Stderr, "Fatal error: %s\n", err.Error())
 		return
 	}
 
 	cli.conn, err = net.DialTCP("tcp", nil, tcpAddr)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Fatal error: %s", err.Error())
+		fmt.Fprintf(os.Stderr, "Fatal error: %s\n", err.Error())
 		return
 	}
 	defer cli.conn.Close()
