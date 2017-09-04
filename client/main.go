@@ -6,6 +6,8 @@ import (
 	"net"
 	"os"
 	"time"
+
+	"github.com/sencoder/SocketBenchmark/client/util"
 )
 
 const (
