@@ -5,20 +5,18 @@ import (
 	"log"
 	"net"
 	"os"
+	"time"
 )
 
 const (
 	SERVER_ADDRESS = "192.168.123.163:9090"
 )
 
-var conn *net.TCPConn
-var isStart bool
-
-func init() {
-	isStart = false
+type Client struct {
+	conn *net.TCPConn
 }
 
-func StartService() (err error) {
+func (cli *Client) Start() (err error) {
 
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", SERVER_ADDRESS)
 	if err != nil {
@@ -26,39 +24,52 @@ func StartService() (err error) {
 		return
 	}
 
-	conn, err = net.DialTCP("tcp", nil, tcpAddr)
+	cli.conn, err = net.DialTCP("tcp", nil, tcpAddr)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Fatal error: %s", err.Error())
 		return
 	}
-	defer conn.Close()
+	defer cli.conn.Close()
 	log.Println("connect success")
-	isStart = true
 
-	receiveMsg()
+	work(cli.conn)
+
+	log.Println("client finish")
 	return nil
 }
 
-func StopService() {
-	isStart = false
-}
-
 // 收取 socket server 信息
-func receiveMsg() error {
+func work(conn *net.TCPConn) error {
 	buffer := make([]byte, 1024)
-	for isStart {
+
+	for {
+		conn.Write([]byte("Pride and Prejudice. It is a truth universally acknowledged, that a single man in possession of a good fortune must be in wanna of a wife."))
+		startTime := time.Now().UnixNano() / 1000000
 		n, err := conn.Read(buffer)
 		if err != nil {
 			log.Println(conn.RemoteAddr().String(), "connection error:", err)
-			isStart = false
+			break
 		} else {
-			msg := string(buffer)
-			log.Println("Msg:", msg, n)
+			msg := string(buffer[:n])
+			log.Println("Msg:", msg)
 		}
+		endTime := time.Now().UnixNano() / 1000000
+		s := util.Sample{Time: time.Now().Unix(), Latency: endTime - startTime}
+		util.WriteData(s)
 	}
 	return nil
 }
 
+func addClient() {
+
+	go new(Client).Start()
+}
+
 func main() {
-	StartService()
+	cliNum := 60
+	for i := 0; i < cliNum; i++ {
+		time.Sleep(time.Second)
+		addClient()
+		log.Println("Add client", i)
+	}
 }
