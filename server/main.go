@@ -5,6 +5,9 @@ import (
 	"net"
 	"runtime"
 	"sync"
+	"time"
+
+	"github.com/sencoder/SocketBenchmark/server/util"
 )
 
 var id = 1000
@@ -92,17 +95,15 @@ func (cli *Client) onConnect(conn net.Conn) {
 	buffer := make([]byte, 1024)
 
 	for {
-		var msg string
-
 		n, err := conn.Read(buffer)
 		if err != nil {
 			log.Println(conn.RemoteAddr().String(), " connection error:", err)
 			cli.onDisConnect()
 			return
 		}
-		log.Println(string(buffer[:n]))
+		time.Sleep(time.Millisecond * 5)
+		msg := "echo: " + string(buffer[:n])
 
-		// n, err = conn.Write(utils.Encode([]byte(msg)))
 		n, err = conn.Write([]byte(msg))
 		if err != nil {
 			log.Println("Seem to send msg fail:", err)
@@ -116,5 +117,7 @@ func (cli *Client) onDisConnect() {
 
 func main() {
 	runtime.GOMAXPROCS(6)
+
+	util.CollectData()
 	StartSocketServer("0.0.0.0:9090")
 }
