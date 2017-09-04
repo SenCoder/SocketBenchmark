@@ -2,13 +2,13 @@ package main
 
 import (
 	"fmt"
-	"net"
 	"log"
+	"net"
 	"os"
 )
 
 const (
-	SERVER_ADDRESS = "192.168.1.114:1024"
+	SERVER_ADDRESS = "192.168.123.163:9090"
 )
 
 var conn *net.TCPConn
@@ -39,11 +39,9 @@ func StartService() (err error) {
 	return nil
 }
 
-
 func StopService() {
 	isStart = false
 }
-
 
 // 收取 socket server 信息
 func receiveMsg() error {
@@ -64,4 +62,3 @@ func receiveMsg() error {
 func main() {
 	StartService()
 }
-
