@@ -11,12 +11,20 @@ import (
 )
 
 const (
-	SERVER_ADDRESS = "192.168.123.163:9090"
+	SERVER_ADDRESS = "13.56.82.138:9000"
 )
+
+var c util.Collector
 
 type Client struct {
 	conn *net.TCPConn
 }
+
+func init() {
+	c.OpenFile("sample.json", 0644)
+}
+
+var cliNum = 1200
 
 func (cli *Client) Start() (err error) {
 
@@ -44,20 +52,27 @@ func (cli *Client) Start() (err error) {
 func work(conn *net.TCPConn) error {
 	buffer := make([]byte, 1024)
 
+	msg := util.Rs(512)
+
 	for {
-		conn.Write([]byte("Pride and Prejudice. It is a truth universally acknowledged, that a single man in possession of a good fortune must be in wanna of a wife."))
-		startTime := time.Now().UnixNano() / 1000000
-		n, err := conn.Read(buffer)
+		startTime := time.Now().UnixNano()
+		conn.Write(msg)
+
+		_, err := conn.Read(buffer)
 		if err != nil {
 			log.Println(conn.RemoteAddr().String(), "connection error:", err)
 			break
 		} else {
-			msg := string(buffer[:n])
-			log.Println("Msg:", msg)
+			_, err = conn.Write([]byte(msg))
+			if err != nil {
+				log.Println(conn.RemoteAddr().String(), "connection error:", err)
+				break
+			}
 		}
-		endTime := time.Now().UnixNano() / 1000000
-		s := util.Sample{Time: time.Now().Unix(), Latency: endTime - startTime}
-		util.WriteData(s)
+		time.Sleep(time.Second)
+		endTime := time.Now().UnixNano()
+		d := util.DataSample{Time: time.Now().Unix(), Latency: (endTime - startTime) / 1000000}
+		c.Sample(d)
 	}
 	return nil
 }
@@ -68,10 +83,11 @@ func addClient() {
 }
 
 func main() {
-	cliNum := 60
+
 	for i := 0; i < cliNum; i++ {
-		time.Sleep(time.Second)
+		time.Sleep(time.Millisecond * 1)
 		addClient()
 		log.Println("Add client", i)
 	}
+	time.Sleep(time.Minute * 3)
 }
