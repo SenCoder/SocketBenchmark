@@ -57,7 +57,7 @@ func MemInfo() (uint64, float64) {
 	log.Printf("Used:%v, UsedPercent:%f%%\n", v.Used/1024/1024, v.UsedPercent)
 
 	// convert to JSON. String() is also implemented
-	log.Println(v)
+//	log.Println(v)
 
 	return v.Used / 1024 / 1024, v.UsedPercent
 }
@@ -67,7 +67,11 @@ func CpuInfo() float64 {
 	if err != nil {
 		log.Println(percents)
 	}
-	return percents[0]
+	if len(percents) > 0 {
+		return percents[0]
+	}
+
+	return -1
 }
 
 func CollectData() {

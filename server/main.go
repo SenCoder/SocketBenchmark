@@ -5,7 +5,7 @@ import (
 	"net"
 	"runtime"
 	"sync"
-	"time"
+//	"time"
 
 	"github.com/sencoder/SocketBenchmark/server/util"
 )
@@ -101,7 +101,8 @@ func (cli *Client) onConnect(conn net.Conn) {
 			cli.onDisConnect()
 			return
 		}
-		time.Sleep(time.Millisecond * 5)
+//		startTime := time.Now().UnixNano()
+//		time.Sleep(time.Millisecond * 10)
 		msg := "echo: " + string(buffer[:n])
 
 		n, err = conn.Write([]byte(msg))
@@ -119,5 +120,5 @@ func main() {
 	runtime.GOMAXPROCS(6)
 
 	util.CollectData()
-	StartSocketServer("0.0.0.0:9090")
+	StartSocketServer("0.0.0.0:9000")
 }
