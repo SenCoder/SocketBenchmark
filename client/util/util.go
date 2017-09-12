@@ -14,9 +14,9 @@ type Collector struct {
 }
 
 type DataSample struct {
-	Time     int64
-	Latency  int64
-	ConUsers int64
+	Time    int64
+	Latency int64
+	Count   int64
 }
 
 func (c *Collector) OpenFile(filename string, perm os.FileMode) {
@@ -39,7 +39,7 @@ func (c *Collector) CloseFile() {
 
 func (c *Collector) Sample(d DataSample) {
 
-	dataStr := strconv.FormatInt(d.Time, 10) + " " + strconv.FormatInt(d.Latency, 10) + " " + strconv.FormatInt(d.ConUsers, 10) + "\n"
+	dataStr := strconv.FormatInt(d.Time, 10) + " " + strconv.FormatInt(d.Latency, 10) + " " + strconv.FormatInt(d.Count, 10) + "\n"
 
 	c.f.Write([]byte(dataStr))
 

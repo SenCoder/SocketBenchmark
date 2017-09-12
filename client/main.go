@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/sencoder/SocketBenchmark/client/util"
@@ -17,14 +18,13 @@ const (
 var c util.Collector
 
 type Client struct {
-	conn *net.TCPConn
+	conn  *net.TCPConn
+	count int64
 }
 
 func init() {
 	c.OpenFile("sample.json", 0644)
 }
-
-var cliNum = 1200
 
 func (cli *Client) Start() (err error) {
 
@@ -42,14 +42,14 @@ func (cli *Client) Start() (err error) {
 	defer cli.conn.Close()
 	log.Println("connect success")
 
-	work(cli.conn)
+	cli.work(cli.conn)
 
 	log.Println("client finish")
 	return nil
 }
 
 // 收取 socket server 信息
-func work(conn *net.TCPConn) error {
+func (cli *Client) work(conn *net.TCPConn) error {
 	buffer := make([]byte, 1024)
 
 	msg := util.Rs(512)
@@ -69,10 +69,11 @@ func work(conn *net.TCPConn) error {
 				break
 			}
 		}
-		time.Sleep(time.Second)
+		cli.count++
 		endTime := time.Now().UnixNano()
-		d := util.DataSample{Time: time.Now().Unix(), Latency: (endTime - startTime) / 1000000}
+		d := util.DataSample{Time: time.Now().Unix(), Latency: (endTime - startTime) / 1000000, Count: cli.count}
 		c.Sample(d)
+		time.Sleep(time.Second)
 	}
 	return nil
 }
@@ -84,10 +85,25 @@ func addClient() {
 
 func main() {
 
+	flag := make(chan bool)
+
+	if len(os.Args) < 2 {
+		log.Println("Please give an int parameter")
+		return
+	}
+
+	arg := os.Args[1]
+
+	cliNum, err := strconv.Atoi(arg)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
 	for i := 0; i < cliNum; i++ {
-		time.Sleep(time.Millisecond * 1)
+		time.Sleep(time.Millisecond * 50)
 		addClient()
 		log.Println("Add client", i)
 	}
-	time.Sleep(time.Minute * 3)
+	flag <- true
 }
