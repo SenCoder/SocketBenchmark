@@ -43,7 +43,7 @@ func Sample() {
 	sample := DataSample{Time: time.Now().Unix(), CpuPerc: CpuInfo()}
 	sample.MemUsed, sample.MemPerc = MemInfo()
 
-	err := WriteFile("sample.json", []byte(sample.toString()), 0644)
+	err := WriteFile("ssample.json", []byte(sample.toString()), 0644)
 
 	if err != nil {
 		log.Println(err)

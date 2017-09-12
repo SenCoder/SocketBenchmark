@@ -22,10 +22,6 @@ type Client struct {
 	count int64
 }
 
-func init() {
-	c.OpenFile("sample.json", 0644)
-}
-
 func (cli *Client) Start() (err error) {
 
 	tcpAddr, err := net.ResolveTCPAddr("tcp4", SERVER_ADDRESS)
@@ -99,11 +95,16 @@ func main() {
 		log.Println(err)
 		return
 	}
+	c.OpenFile("sample-" + arg + ".json", 0644)
 
 	for i := 0; i < cliNum; i++ {
 		time.Sleep(time.Millisecond * 50)
 		addClient()
 		log.Println("Add client", i)
 	}
-	flag <- true
+	select {
+		case <- flag:
+		case <- time.After(time.Minute * 30):
+			log.Println("Game Over")
+	}
 }
